@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <random>
+#include <vector>
 
 using namespace std;
 typedef unsigned int uint;
@@ -48,8 +49,32 @@ uint mutate(uint x) {
     return x;
 }
 
+uint cross(uint a, uint b) {
+    uint crossPoint = random<uint>(1, 31);
+    uint crossLine = 1;
+    for (int i = 1; i < crossPoint; i++) {
+        crossLine <<= 1;
+        crossLine += 1;
+    }
+    return (a & !crossLine) + (b & crossLine);
+}
+
+vector<uint> toReplicate(vector<uint> arr) {
+    return arr;
+}
+
+vector<uint> replicate(vector<uint> arr){
+    return arr;
+}
+
+void reduce(vector<uint> arr){}
+
+uint *toReplicate(uint *arr) {
+    return arr;
+}
+
 int main() {
-    cout << 0xFF << endl;
-    cout << mutate(0xFF) << endl;
+
+
     return 0;
 }
