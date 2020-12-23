@@ -6,6 +6,8 @@
 using namespace std;
 typedef unsigned int uint;
 
+const double Pm = 0.07;
+
 template<typename Numeric, typename Generator = std::mt19937>
 Numeric random(Numeric from, Numeric to) {
     thread_local static Generator gen(std::random_device{}());
@@ -20,16 +22,30 @@ Numeric random(Numeric from, Numeric to) {
     return dist(gen, typename dist_type::param_type{from, to});
 }
 
-const double Pm = 0.07;
+double f(double);
 
+double getX(uint);
+
+uint toGreyCode(uint);
+
+uint fromGreyCode(uint);
+
+//1
 double f(double x) {
     return sin(pow((4 * x - exp(x - 12)), 3)) + sin(x * x);
 }
 
+//2
+double getX(uint code) {
+    return (double) 10 * fromGreyCode(code) / UINT32_MAX;
+}
+
+//3
 uint toGreyCode(uint x) {
     return x ^ (x >> 1);
 }
 
+//3
 uint fromGreyCode(uint x) {
     int inv = 0;
     for (; x; x = x >> 1)
@@ -37,6 +53,7 @@ uint fromGreyCode(uint x) {
     return inv;
 }
 
+//4
 uint mutate(uint x) {
     for (uint i = 1, counter = 0; i > 0; i <<= 1, counter++) {
         auto chance = random<double>(0.0, 1.0);
@@ -49,6 +66,7 @@ uint mutate(uint x) {
     return x;
 }
 
+//5
 uint cross(uint a, uint b) {
     uint crossPoint = random<uint>(1, 31);
     uint crossLine = 1;
@@ -59,22 +77,21 @@ uint cross(uint a, uint b) {
     return (a & !crossLine) + (b & crossLine);
 }
 
-vector<uint> toReplicate(vector<uint> arr) {
+
+//6
+vector<uint> replicate(vector<uint> arr) {
+    //TODO отбор родителей и размножение
     return arr;
 }
 
-vector<uint> replicate(vector<uint> arr){
-    return arr;
+//7
+void reduce(vector<uint> arr) {
+    //TODO сокращение популяции
 }
 
-void reduce(vector<uint> arr){}
-
-uint *toReplicate(uint *arr) {
-    return arr;
-}
-
+//8
 int main() {
-
+    //TODO GA
 
     return 0;
 }
