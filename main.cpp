@@ -1,97 +1,111 @@
-#include <iostream>
-#include <cmath>
-#include <random>
-#include <vector>
-
-using namespace std;
-typedef unsigned int uint;
-
-const double Pm = 0.07;
-
-template<typename Numeric, typename Generator = std::mt19937>
-Numeric random(Numeric from, Numeric to) {
-    thread_local static Generator gen(std::random_device{}());
-
-    using dist_type = typename std::conditional
-            <
-                    std::is_integral<Numeric>::value, std::uniform_int_distribution<Numeric>, std::uniform_real_distribution<Numeric>
-            >::type;
-
-    thread_local static dist_type dist;
-
-    return dist(gen, typename dist_type::param_type{from, to});
-}
-
-double f(double);
-
-double getX(uint);
-
-uint toGreyCode(uint);
-
-uint fromGreyCode(uint);
-
-//1
-double f(double x) {
-    return sin(pow((4 * x - exp(x - 12)), 3)) + sin(x * x);
-}
-
-//2
-double getX(uint code) {
-    return (double) 10 * fromGreyCode(code) / UINT32_MAX;
-}
-
-//3
-uint toGreyCode(uint x) {
-    return x ^ (x >> 1);
-}
-
-//3
-uint fromGreyCode(uint x) {
-    int inv = 0;
-    for (; x; x = x >> 1)
-        inv ^= x;
-    return inv;
-}
-
-//4
-uint mutate(uint x) {
-    for (uint i = 1, counter = 0; i > 0; i <<= 1, counter++) {
-        auto chance = random<double>(0.0, 1.0);
-        if (chance <= Pm) {
-            cout << counter << endl;
-            x ^= i;
-        }
-
-    }
-    return x;
-}
-
-//5
-uint cross(uint a, uint b) {
-    uint crossPoint = random<uint>(1, 31);
-    uint crossLine = 1;
-    for (int i = 1; i < crossPoint; i++) {
-        crossLine <<= 1;
-        crossLine += 1;
-    }
-    return (a & !crossLine) + (b & crossLine);
-}
+#include "functions/common.h"
+#include "functions/crossingovers.h"
+#include "functions/mutations.h"
+#include "functions/reductions.h"
+#include "functions/replications.h"
 
 
-//6
-vector<uint> replicate(vector<uint> arr) {
-    //TODO отбор родителей и размножение
-    return arr;
-}
+uint ga(pairs_to_replicate (*)(const vector<candidate> &),
+        uint (*)(uint, uint),
+        uint (*)(uint, uint),
+        void (*)(vector<candidate> &),
+        const vector<uint> &,
+        uint,
+        uint);
 
-//7
-void reduce(vector<uint> arr) {
-    //TODO сокращение популяции
-}
+vector<pair<uint, uint>> answers;
 
-//8
 int main() {
-    //TODO GA
+    vector<uint> start;
+    for (int i = 0; i < SIZE; i++) {
+        start.push_back(random(0, UINT32_MAX));
+    }
+    uint i = 0;
+    double real_max = 0;
+    double real_max_x = 0;
+    uint real_max_index = 0;
+    for (int pm = 7; pm < 17; pm++) {
+        for (auto cross : crossFunctions) {
+            for (auto mutate: mutateFunctions) {
+                for (auto reduce: reductionFunctions) {
+                    for (auto replicate: replicationFunctions) {
+                        ga(replicate, cross, mutate, reduce, start, i++, pm);
+                    }
+                }
+            }
+        }
+        cout << "pm = " << pm << endl;
+        for (auto answer: answers) {
+            if(f(getX(answer.first)) > real_max){
+                real_max = f(getX(answer.first));
+                real_max_x = getX(answer.first);
+                real_max_index = answer.second;
+            }
+            cout << answer.second << ": x = " << getX(answer.first)
+                 << "\nf(x) = " << f(getX(answer.first)) << "\n";
+        }
+        answers.clear();
+        cout << endl;
+    }
 
+    cout <<"best result" << endl;
+    cout << real_max_index << ": x = " << real_max_x
+         << "\nf(x) = " << real_max << "\n\n";
+
+    /*
+    auto t1 = chrono::high_resolution_clock::now();
+    int a = random(0, RAND_MAX);
+    auto t2 = chrono::high_resolution_clock::now();
+
+    auto t3 = chrono::high_resolution_clock::now();
+    int b = rand();
+    auto t4 = chrono::high_resolution_clock::now();
+
+    cout << a << ", " << chrono::duration_cast<chrono::nanoseconds>(t2 - t1).count() << endl;
+    cout << b << ", " << chrono::duration_cast<chrono::nanoseconds>(t4 - t3).count() << endl;
+    */
+
+    /*
+    int x = 1;
+
+    cout << (x << (3 - 1)) << endl;
     return 0;
+     */
+}
+
+
+uint ga(pairs_to_replicate (replication)(const vector<candidate> &),
+        uint (crossingover)(uint, uint),
+        uint (mutation)(uint, uint),
+        void (reduction)(vector<candidate> &),
+        const vector<uint> &startPopulation,
+        uint index,
+        uint pm) {
+    uint result = 0;
+    auto population = vector<candidate>(startPopulation.size());
+    for (uint val: startPopulation) {
+        population.emplace_back(pair(val, f(getX(val))));
+    }
+
+    for (int i = 0; i < ITERATIONS; i++) {
+        auto to_repl = replication(population);
+        for (auto repl: to_repl) {
+            uint son = crossingover(repl.first, repl.second);
+            population.emplace_back(pair(son, f(getX(son))));
+        }
+        for (int j = 0; j < population.size(); j++) {
+            uint mutant = mutation(population[j].first, pm);
+            population[j] = pair(mutant, f(getX(mutant)));
+        }
+        reduction(population);
+    }
+    double max = population[0].second;
+    for (auto value: population) {
+        if (value.second > max) {
+            max = value.second;
+            result = value.first;
+        }
+    }
+    answers.emplace_back(result, index);
+    return result;
 }
