@@ -27,6 +27,7 @@ uint toGreyCode(uint);
 
 uint fromGreyCode(uint);
 
+
 /*
 template<typename Numeric, typename Generator = std::mt19937>
 Numeric random(Numeric from, Numeric to) {

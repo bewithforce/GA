@@ -24,7 +24,7 @@ int main() {
     double real_max = 0;
     double real_max_x = 0;
     uint real_max_index = 0;
-    for (int pm = 7; pm < 17; pm++) {
+    /*for (int pm = 7; pm < 17; pm++) {
         for (auto cross : crossFunctions) {
             for (auto mutate: mutateFunctions) {
                 for (auto reduce: reductionFunctions) {
@@ -47,30 +47,27 @@ int main() {
         answers.clear();
         cout << endl;
     }
+    */
+    /*
+    ga(randomReplication, bitwiseCross, bitwiseMutate, tournamentReduction, start, 0, 8);
+    for (auto answer: answers) {
+        if(f(getX(answer.first)) > real_max){
+            real_max = f(getX(answer.first));
+            real_max_x = getX(answer.first);
+            real_max_index = answer.second;
+        }
+        cout << answer.second << ": x = " << getX(answer.first)
+             << "\nf(x) = " << f(getX(answer.first)) << "\n";
+    }
+    answers.clear();
 
     cout <<"best result" << endl;
     cout << real_max_index << ": x = " << real_max_x
          << "\nf(x) = " << real_max << "\n\n";
-
-    /*
-    auto t1 = chrono::high_resolution_clock::now();
-    int a = random(0, RAND_MAX);
-    auto t2 = chrono::high_resolution_clock::now();
-
-    auto t3 = chrono::high_resolution_clock::now();
-    int b = rand();
-    auto t4 = chrono::high_resolution_clock::now();
-
-    cout << a << ", " << chrono::duration_cast<chrono::nanoseconds>(t2 - t1).count() << endl;
-    cout << b << ", " << chrono::duration_cast<chrono::nanoseconds>(t4 - t3).count() << endl;
     */
 
-    /*
-    int x = 1;
-
-    cout << (x << (3 - 1)) << endl;
-    return 0;
-     */
+    cout << toGreyCode(fromGreyCode(123)) << endl;
+    //cout << fromGreyCode(123) << endl;
 }
 
 

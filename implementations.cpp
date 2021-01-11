@@ -1,4 +1,5 @@
 #include <set>
+#include <numeric>
 #include "functions/common.h"
 #include "functions/crossingovers.h"
 #include "functions/mutations.h"
@@ -19,15 +20,34 @@ double getX(uint code) {
 
 // unsigned int32 to Grey code
 uint toGreyCode(uint x) {
-    return x ^ (x >> 1);
+    __asm{
+        mov eax, x
+        shr x, 1
+        xor x, eax
+    }
+    return x;
 }
 
 // Grey code to unsigned int32
 uint fromGreyCode(uint x) {
-    int inv = 0;
-    for (; x; x = x >> 1)
-        inv ^= x;
-    return inv;
+    __asm{
+        mov ebx, 0
+
+        cmp x, 0
+        je finish
+
+        xor ebx, x
+        cycle:
+            shr x, 1
+            cmp x, 0
+            je finish
+            xor ebx, x
+            jmp cycle
+
+        finish:
+            mov x, ebx
+    }
+    return x;
 }
 
 random_device rd;
